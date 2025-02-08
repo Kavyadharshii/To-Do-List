@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .edit, .delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        .edit:hover {
+            color: #007BFF;
+        }
+
+        .delete:hover {
+            color: #FF6347;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <input type="text" id="taskInput" placeholder="Add a new task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+            if (taskText !== '') {
+                const task = {
+                    id: Date.now(),
+                    text: taskText
+                };
+                saveTask(task);
+                appendTask(task);
+                taskInput.value = '';
+            }
+        }
+
+        function appendTask(task) {
+            const taskList = document.getElementById('taskList');
+            const li = document.createElement('li');
+            li.setAttribute('data-id', task.id);
+            li.innerHTML = `
+                <span>${task.text}</span>
+                <div>
+                    <button class="edit" onclick="editTask(${task.id})">Edit</button>
+                    <button class="delete" onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+            `;
+            taskList.appendChild(li);
+        }
+
+        function editTask(id) {
+            const li = document.querySelector(`li[data-id='${id}']`);
+            const span = li.querySelector('span');
+            const newTask = prompt('Edit your task:', span.textContent);
+            if (newTask) {
+                span.textContent = newTask;
+                updateTask(id, newTask);
+            }
+        }
+
+        function deleteTask(id) {
+            const taskList = document.getElementById('taskList');
+            const li = document.querySelector(`li[data-id='${id}']`);
+            taskList.removeChild(li);
+            removeTask(id);
+        }
+
+        function saveTask(task) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function updateTask(id, newText) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks = tasks.map(task => task.id === id ? { ...task, text: newText } : task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function removeTask(id) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks = tasks.filter(task => task.id !== id);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.forEach(appendTask);
+        }
+    </script>
+</body>
+</html>
